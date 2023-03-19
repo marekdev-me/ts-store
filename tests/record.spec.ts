@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai';
-import Store from '../index';
+import { Store } from '../index';
 import Record from '../src/struct/Record';
 
 describe('manage table records', () => {
@@ -67,11 +67,9 @@ describe('manage table records', () => {
     const updatedRecord = table.updateOne(record.getRowId(), updatedData);
 
     assert.instanceOf(updatedRecord, Record);
-    // assert.notEqual(updatedRecord.getColumnValuesMap().get('username'), rec.get('username'));
     assert.equal(updatedRecord.getColumnValuesMap().get('username'), updatedData.get('username'));
 
     table.delete(record.getRowId());
-    // table.delete(updatedRecord.getRowId());
   });
 
   it('should delete record based on field/value provided', () => {
@@ -88,5 +86,15 @@ describe('manage table records', () => {
 
     records = table.find();
     expect(records).have.length(0);
+  });
+
+  // TODO: Test find where
+  it('should find a record by key/value', () => {
+    const record = table.insertOne(rec);
+
+    const foundRecord = table.findWhere({ srcColumn: 'email', srcValue: 'marek@marekdev.me' });
+
+    assert.instanceOf(foundRecord, Record);
+    assert.equal(record.getColumnValuesMap().get('username'), foundRecord.getColumnValuesMap().get('username'));
   });
 });

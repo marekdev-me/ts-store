@@ -1,5 +1,15 @@
 import Record from './Record';
 import ObjectId from '../utils/object-id';
+// import {
+//   Events, onUpdate, onInsert, onDelete,
+//   onBeforeInsert, onBeforeUpdate, onBeforeDelete,
+// } from '../events/events';
+// import EventEmitter = NodeJS.EventEmitter;
+
+interface Query {
+  srcColumn: string;
+  srcValue: string
+}
 
 export default class Table {
   /**
@@ -14,7 +24,7 @@ export default class Table {
    *
    * @private
    */
-  private records: Map<string, Record>;
+  readonly records: Map<string, Record>;
 
   /**
    * Table creation date
@@ -22,6 +32,8 @@ export default class Table {
    * @private
    */
   readonly createdAt: Date;
+
+  // private eventEmitter: EventEmitter;
 
   /**
    * Table class constructor
@@ -32,6 +44,7 @@ export default class Table {
     this.tableName = tableName;
     this.createdAt = new Date();
     this.records = new Map<string, Record>();
+    // this.eventEmitter = Events;
   }
 
   /**
@@ -41,11 +54,17 @@ export default class Table {
    * @returns {Record} Created record
    */
   public insertOne = (data: Map<string, any>): Record => {
+    // // Emit before row insert
+    // onBeforeInsert(data);
+
     const objectId = ObjectId();
 
     const record: Record = new Record(objectId, data, new Date(), new Date());
 
     this.records.set(objectId, record);
+
+    // Emit after row insert
+    // onInsert(record);
 
     return record;
   };
@@ -60,11 +79,17 @@ export default class Table {
   public updateOne = (rowId: string, valuesMap: Map<string, any>): Record => {
     const record = this.records.get(rowId);
 
+    // Emit before update
+    // onBeforeUpdate(valuesMap, record);
+
     valuesMap.forEach((k, v) => {
       record.getColumnValuesMap().set(v, k);
     });
 
     record.setUpdatedAt(new Date());
+
+    // Emit after update
+    // onUpdate(record);
 
     return this.records.get(rowId);
   };
@@ -78,7 +103,13 @@ export default class Table {
   public delete = (rowId: string): Record => {
     const record: Record = this.records.get(rowId);
 
+    // Emit before delete
+    // onBeforeDelete(record);
+
     this.records.delete(record.getRowId());
+
+    // Emit after delete
+    // onDelete(record);
 
     return record;
   };
@@ -91,6 +122,25 @@ export default class Table {
    */
   // eslint-disable-next-line max-len
   public findOne = (rowId: string): Map<string, any> => this.records.get(rowId).getColumnValuesMap();
+
+  /**
+   * Find record/row by field and value
+   *
+   * @param query {Query} Query parameters
+   */
+  public findWhere = (query: Query): Record => {
+    // TODO: Optimise
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key] of this.records.entries()) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
+        if (query.srcColumn === rKey && query.srcValue === rValue) {
+          return this.records.get(key);
+        }
+      }
+    }
+    return new Record('NULL', new Map(), new Date(), new Date());
+  };
 
   /**
    * Get all rows in a table
