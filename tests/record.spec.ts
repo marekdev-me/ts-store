@@ -72,6 +72,17 @@ describe('manage table records', () => {
     table.delete(record.getRowId());
   });
 
+  it('should find a record by key/value', () => {
+    const record = table.insertOne(rec);
+
+    const foundRecord = table.findWhere({ srcColumn: 'email', srcValue: 'marek@marekdev.me' });
+
+    assert.instanceOf(foundRecord, Record);
+    assert.equal(record.getColumnValuesMap().get('username'), foundRecord.getColumnValuesMap().get('username'));
+
+    table.delete(record.getRowId());
+  });
+
   it('should delete record based on field/value provided', () => {
     const record = table.insertOne(rec);
 
@@ -88,13 +99,33 @@ describe('manage table records', () => {
     expect(records).have.length(0);
   });
 
-  // TODO: Test find where
-  it('should find a record by key/value', () => {
-    const record = table.insertOne(rec);
+  it('should delete single record where key/value and multiple tag is set to false', () => {
+    table.insertOne(rec);
+    const recToDelete = table.insertOne(recTwo);
 
-    const foundRecord = table.findWhere({ srcColumn: 'email', srcValue: 'marek@marekdev.me' });
+    // Assert that database has 2 records
+    expect(table.find()).to.have.length(2);
 
-    assert.instanceOf(foundRecord, Record);
-    assert.equal(record.getColumnValuesMap().get('username'), foundRecord.getColumnValuesMap().get('username'));
+    // Attempt to delete records
+    table.deleteWhere({ srcColumn: 'email', srcValue: rec.get('email') }, false);
+
+    // Assert table has no records
+    expect(table.find()).to.have.length(1);
+
+    table.delete(recToDelete.getRowId());
+  });
+
+  it('should delete multiple records where key/value and multiple tag set to true', () => {
+    table.insertOne(rec);
+    table.insertOne(recTwo);
+
+    // Assert that database has 2 records
+    expect(table.find()).to.have.length(2);
+
+    // Attempt to delete records
+    table.deleteWhere({ srcColumn: 'email', srcValue: rec.get('email') }, true);
+
+    // Assert table has no records
+    expect(table.find()).to.have.length(0);
   });
 });

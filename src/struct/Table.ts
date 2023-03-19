@@ -142,6 +142,22 @@ export default class Table {
     return new Record('NULL', new Map(), new Date(), new Date());
   };
 
+  public deleteWhere = (query: Query, multiple: boolean = false): void => {
+    // TODO: Optimise
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key] of this.records.entries()) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
+        if (query.srcColumn === rKey && query.srcValue === rValue) {
+          this.records.delete(key);
+          if (!multiple) {
+            return;
+          }
+        }
+      }
+    }
+  };
+
   /**
    * Get all rows in a table
    *
