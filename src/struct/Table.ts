@@ -60,13 +60,13 @@ export default class Table {
     if (this.tableOptions) {
       Array.from(this.records.keys()).forEach((r) => {
         const record = this.records.get(r)?.getColumnValuesMap();
+        // Check for unknown fields
+        this.tableOptions.uniqueFields.map((k) => {
+          if (!record.has(k)) {
+            throw new Error(`Non-existing unique field ${k} specified for ${this.tableName} table`);
+          }
 
-        if (!record) {
-          return true;
-        }
-
-        this.tableOptions?.uniqueFields.some((uK) => {
-          if (record.get(uK) === data.get(uK)) {
+          if (record.get(k) === data.get(k)) {
             isUnique = false;
             return true; // exit the loop early
           }
@@ -74,7 +74,6 @@ export default class Table {
         });
       });
     }
-
     return isUnique;
   };
 
@@ -86,7 +85,7 @@ export default class Table {
    */
   public insertOne = (data: Map<string, any>): Record => {
     if (this.records.size > 0 && this.tableOptions && !this.isUnique(data)) {
-      throw new Error('Not unique fields');
+      throw new Error(`Unique data check failed in ${this.tableName} table`);
     }
 
     const objectId = ObjectId();
@@ -109,7 +108,7 @@ export default class Table {
     const record = this.records.get(rowId);
 
     if (this.records.size > 0 && this.tableOptions && !this.isUnique(valuesMap)) {
-      throw new Error('Not unique fields');
+      throw new Error(`Unique data check failed in ${this.tableName} table`);
     }
 
     valuesMap.forEach((k, v) => {
@@ -158,7 +157,7 @@ export default class Table {
     // eslint-disable-next-line no-restricted-syntax
     for (const [key] of this.records.entries()) {
       // eslint-disable-next-line no-restricted-syntax
-      for (const [rKey, rValue] of this.records?.get(key).getColumnValuesMap().entries()) {
+      for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
         if (query.srcColumn === rKey && query.srcValue === rValue) {
           return this.records?.get(key);
         }

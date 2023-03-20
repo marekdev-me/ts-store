@@ -14,7 +14,9 @@
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint && npm test",
     "version": "npm run format && git add -A src",
-    "postversion": "npm run commit && git push --tags"
+    "postversion": "npm run commit && git push --tags",
+    "clean": "if exist lib ( rd /S /Q lib)",
+    "updateLink": "npm run clean && tsc && npm rm my-lib -g && npm link"
   },
   "files": [
     "lib/**/*"

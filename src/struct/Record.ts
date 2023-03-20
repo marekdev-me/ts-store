@@ -1,4 +1,9 @@
 export default class Record {
+  /**
+   * Current row ID
+   *
+   * @private
+   */
   private readonly rowId: string;
 
   /**

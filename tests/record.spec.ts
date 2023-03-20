@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai';
-import Store from '../index';
+import Store from '../src';
 import Record from '../src/struct/Record';
 
 describe('manage table records', () => {
