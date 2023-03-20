@@ -1,15 +1,16 @@
 {
-  "name": "ts-store",
+  "name": "in-mem-store",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Simple SQL-like in-memory database",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "commit": "cz",
     "test": "mocha",
     "lint": "./node_modules/.bin/eslint"
   },
   "keywords": [],
-  "author": "",
+  "author": "Marek Dev",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.3.4",

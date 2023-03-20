@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Store } from '../index';
+import Store from '../index';
 import Database from '../src/struct/Database';
 
 describe('add a database to a newly created store', () => {

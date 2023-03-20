@@ -1,4 +1,5 @@
 import Table from './Table';
+import { TableOptions } from '../interface/table-options';
 import TableExists from '../errors/table-exists-error';
 import TableDoesNotExist from '../errors/table-does-not-exist-error';
 
@@ -15,7 +16,7 @@ export default class Database {
    *
    * @private
    */
-  private tables: Map<string, Table>;
+  private readonly tables: Map<string, Table>;
 
   /**
    * Database creation date
@@ -38,13 +39,14 @@ export default class Database {
    * Add a new table to database
    *
    * @param tableName {string} Table name to create
+   * @param tableOptions Table options
    */
-  public createTable = (tableName: string): Table => {
+  public createTable = (tableName: string, tableOptions?: TableOptions): Table => {
     if (this.tables.has(tableName)) {
       throw new TableExists(`Table with name ${tableName} already exists!`);
     }
 
-    const table = new Table(tableName);
+    const table = new Table(tableName, tableOptions);
     this.tables.set(tableName, table);
 
     return table;

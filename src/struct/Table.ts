@@ -1,35 +1,34 @@
 import Record from './Record';
 import ObjectId from '../utils/object-id';
-// import {
-//   Events, onUpdate, onInsert, onDelete,
-//   onBeforeInsert, onBeforeUpdate, onBeforeDelete,
-// } from '../events/events';
-// import EventEmitter = NodeJS.EventEmitter;
-
-interface Query {
-  srcColumn: string;
-  srcValue: string
-}
+import { Query, UpdateQuery } from '../interface/query';
+import { TableOptions } from '../interface/table-options';
 
 export default class Table {
   /**
    * Table name
    *
-   * @private
+   * @readonly
    */
   readonly tableName: string;
 
   /**
+   * Current table options
+   *
+   * @readonly
+   */
+  readonly tableOptions: TableOptions | null;
+
+  /**
    * Table records map
    *
-   * @private
+   * @readonly
    */
   readonly records: Map<string, Record>;
 
   /**
    * Table creation date
    *
-   * @private
+   * @readonly
    */
   readonly createdAt: Date;
 
@@ -39,13 +38,39 @@ export default class Table {
    * Table class constructor
    *
    * @param tableName {string} Table name
+   * @param options? {TableOptions} Table options
    */
-  constructor(tableName: string) {
+  constructor(tableName: string, options?: TableOptions) {
     this.tableName = tableName;
     this.createdAt = new Date();
     this.records = new Map<string, Record>();
+    this.tableOptions = options || null;
     // this.eventEmitter = Events;
   }
+
+  /**
+   * Check if values are unique if specified in table options
+   *
+   * @param data {Map<string, any>} Raw data to be checked against
+   * @returns {boolean} Whether values are unique
+   */
+  private isUnique = (data: Map<string, any>): boolean => {
+    let isUnique = true;
+
+    Array.from(this.records.keys()).forEach((r) => {
+      const record = this.records.get(r).getColumnValuesMap();
+
+      this.tableOptions.uniqueFields.some((uK) => {
+        if (record.get(uK) === data.get(uK)) {
+          isUnique = false;
+          return true; // exit the loop early
+        }
+        return isUnique;
+      });
+    });
+
+    return isUnique;
+  };
 
   /**
    * Insert new record into a table
@@ -54,19 +79,17 @@ export default class Table {
    * @returns {Record} Created record
    */
   public insertOne = (data: Map<string, any>): Record => {
-    // // Emit before row insert
-    // onBeforeInsert(data);
+    if (this.records.size > 0 && this.tableOptions && !this.isUnique(data)) {
+      throw new Error('Not unique fields');
+    }
 
     const objectId = ObjectId();
 
-    const record: Record = new Record(objectId, data, new Date(), new Date());
+    const newRecord: Record = new Record(objectId, data, new Date(), new Date());
 
-    this.records.set(objectId, record);
+    this.records.set(objectId, newRecord);
 
-    // Emit after row insert
-    // onInsert(record);
-
-    return record;
+    return newRecord;
   };
 
   /**
@@ -79,17 +102,15 @@ export default class Table {
   public updateOne = (rowId: string, valuesMap: Map<string, any>): Record => {
     const record = this.records.get(rowId);
 
-    // Emit before update
-    // onBeforeUpdate(valuesMap, record);
+    if (this.records.size > 0 && this.tableOptions && !this.isUnique(valuesMap)) {
+      throw new Error('Not unique fields');
+    }
 
     valuesMap.forEach((k, v) => {
       record.getColumnValuesMap().set(v, k);
     });
 
     record.setUpdatedAt(new Date());
-
-    // Emit after update
-    // onUpdate(record);
 
     return this.records.get(rowId);
   };
@@ -103,13 +124,7 @@ export default class Table {
   public delete = (rowId: string): Record => {
     const record: Record = this.records.get(rowId);
 
-    // Emit before delete
-    // onBeforeDelete(record);
-
     this.records.delete(record.getRowId());
-
-    // Emit after delete
-    // onDelete(record);
 
     return record;
   };
@@ -142,6 +157,35 @@ export default class Table {
     return new Record('NULL', new Map(), new Date(), new Date());
   };
 
+  /**
+   * Update where key/value
+   *
+   * @param query {UpdateQuery} Update query
+   * @param multiple {boolean} Whether to affect multiple records
+   */
+  public updateWhere = (query: UpdateQuery, multiple: boolean = false): void => {
+    // TODO: Optimise
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key] of this.records.entries()) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
+        if (query.srcColumn === rKey && query.srcValue === rValue) {
+          this.updateOne(this.records.get(key).getRowId(), query.data);
+          // this.records.get(key).setColumnValuesMap(query.data);
+          if (!multiple) {
+            return;
+          }
+        }
+      }
+    }
+  };
+
+  /**
+   * Delete record where key/value
+   *
+   * @param query {Query} Delete query
+   * @param multiple {boolean} Whether to affect single or multiple records
+   */
   public deleteWhere = (query: Query, multiple: boolean = false): void => {
     // TODO: Optimise
     // eslint-disable-next-line no-restricted-syntax
