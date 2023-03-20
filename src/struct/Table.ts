@@ -57,17 +57,23 @@ export default class Table {
   private isUnique = (data: Map<string, any>): boolean => {
     let isUnique = true;
 
-    Array.from(this.records.keys()).forEach((r) => {
-      const record = this.records.get(r).getColumnValuesMap();
+    if (this.tableOptions) {
+      Array.from(this.records.keys()).forEach((r) => {
+        const record = this.records.get(r)?.getColumnValuesMap();
 
-      this.tableOptions.uniqueFields.some((uK) => {
-        if (record.get(uK) === data.get(uK)) {
-          isUnique = false;
-          return true; // exit the loop early
+        if (!record) {
+          return true;
         }
-        return isUnique;
+
+        this.tableOptions?.uniqueFields.some((uK) => {
+          if (record.get(uK) === data.get(uK)) {
+            isUnique = false;
+            return true; // exit the loop early
+          }
+          return isUnique;
+        });
       });
-    });
+    }
 
     return isUnique;
   };
@@ -99,7 +105,7 @@ export default class Table {
    * @param valuesMap {Map<string, any>} Updated column values map
    * @returns {Record} Updated record
    */
-  public updateOne = (rowId: string, valuesMap: Map<string, any>): Record => {
+  public updateOne = (rowId: string, valuesMap: Map<string, any>): Record | undefined => {
     const record = this.records.get(rowId);
 
     if (this.records.size > 0 && this.tableOptions && !this.isUnique(valuesMap)) {
@@ -107,12 +113,12 @@ export default class Table {
     }
 
     valuesMap.forEach((k, v) => {
-      record.getColumnValuesMap().set(v, k);
+      record?.getColumnValuesMap().set(v, k);
     });
 
-    record.setUpdatedAt(new Date());
+    record?.setUpdatedAt(new Date());
 
-    return this.records.get(rowId);
+    return this.records?.get(rowId);
   };
 
   /**
@@ -121,12 +127,16 @@ export default class Table {
    * @param rowId {string} Row ID to delete
    * @returns {Record} Deleted record
    */
-  public delete = (rowId: string): Record => {
-    const record: Record = this.records.get(rowId);
+  public delete = (rowId: string): Record | undefined => {
+    const record: Record | undefined = this.records.get(rowId);
 
-    this.records.delete(record.getRowId());
+    if (record) {
+      this.records.delete(record?.getRowId());
 
-    return record;
+      return record;
+    }
+
+    return undefined;
   };
 
   /**
@@ -136,25 +146,25 @@ export default class Table {
    * @returns {Map<string, any>} Row column values map
    */
   // eslint-disable-next-line max-len
-  public findOne = (rowId: string): Map<string, any> => this.records.get(rowId).getColumnValuesMap();
+  public findOne = (rowId: string): Map<string, any> => this.records?.get(rowId).getColumnValuesMap();
 
   /**
    * Find record/row by field and value
    *
    * @param query {Query} Query parameters
    */
-  public findWhere = (query: Query): Record => {
+  public findWhere = (query: Query): Record | undefined => {
     // TODO: Optimise
     // eslint-disable-next-line no-restricted-syntax
     for (const [key] of this.records.entries()) {
       // eslint-disable-next-line no-restricted-syntax
-      for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
+      for (const [rKey, rValue] of this.records?.get(key).getColumnValuesMap().entries()) {
         if (query.srcColumn === rKey && query.srcValue === rValue) {
-          return this.records.get(key);
+          return this.records?.get(key);
         }
       }
     }
-    return new Record('NULL', new Map(), new Date(), new Date());
+    return undefined;
   };
 
   /**
@@ -170,7 +180,7 @@ export default class Table {
       // eslint-disable-next-line no-restricted-syntax
       for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
         if (query.srcColumn === rKey && query.srcValue === rValue) {
-          this.updateOne(this.records.get(key).getRowId(), query.data);
+          this.updateOne(this.records?.get(key).getRowId(), query.data);
           // this.records.get(key).setColumnValuesMap(query.data);
           if (!multiple) {
             return;

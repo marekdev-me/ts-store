@@ -48,7 +48,7 @@ export default class Store {
      * @param databaseName {string} Database name to return
      * @returns {Database} Database
      */
-  public getDatabase = (databaseName: string): Database => {
+  public getDatabase = (databaseName: string): Database | undefined => {
     if (!this.databaseHashMap.has(databaseName)) {
       throw new DatabaseDoesNotExist(`Database with the name ${databaseName} does not exist!`);
     }

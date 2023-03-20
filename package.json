@@ -5,10 +5,20 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "build": "npm test && tsc",
     "commit": "cz",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "test": "mocha",
-    "lint": "./node_modules/.bin/eslint"
+    "lint": "./node_modules/.bin/eslint",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint && npm test",
+    "version": "npm run format && git add -A src",
+    "postversion": "npm run commit && git push --tags"
   },
+  "files": [
+    "lib/**/*"
+  ],
   "keywords": [],
   "author": "Marek Dev",
   "license": "ISC",
@@ -27,7 +37,9 @@
     "@typescript-eslint/parser": "^5.55.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.0.0",
-    "ts-node": "^10.9.1"
+    "prettier": "^2.8.5",
+    "ts-node": "^10.9.1",
+    "tslint-config-prettier": "^1.18.0"
   },
   "config": {
     "commitizen": {

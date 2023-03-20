@@ -57,7 +57,7 @@ export default class Database {
    *
    * @param tableName {string} Table name to return
    */
-  public getTable = (tableName: string): Table => {
+  public getTable = (tableName: string): Table | undefined => {
     if (!this.tables.has(tableName)) {
       throw new TableDoesNotExist(`Table with the name ${tableName} does not exist!`);
     }
