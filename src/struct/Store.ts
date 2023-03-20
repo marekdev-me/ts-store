@@ -4,10 +4,10 @@ import DatabaseDoesNotExist from '../errors/database-does-not-exist';
 
 export default class Store {
   /**
-     * Store databases map
-     *
-     * @private
-     */
+   * Store databases map
+   *
+   * @private
+   */
   readonly databaseHashMap: Map<string, Database>;
 
   constructor() {
@@ -27,27 +27,27 @@ export default class Store {
   };
 
   /**
-     * Delete database
-     *
-     * @param databaseName {string} Database name to delete
-     */
+   * Delete database
+   *
+   * @param databaseName {string} Database name to delete
+   */
   public deleteDatabase = (databaseName: string): void => {
     this.databaseHashMap.delete(databaseName);
   };
 
   /**
-     * Get database map
-     *
-     * @returns {Map<string, Database>} Database map
-     */
+   * Get database map
+   *
+   * @returns {Map<string, Database>} Database map
+   */
   public getDatabaseHashMap = (): Map<string, Database> => this.databaseHashMap;
 
   /**
-     * Get database from database map by database name
-     *
-     * @param databaseName {string} Database name to return
-     * @returns {Database} Database
-     */
+   * Get database from database map by database name
+   *
+   * @param databaseName {string} Database name to return
+   * @returns {Database} Database
+   */
   public getDatabase = (databaseName: string): Database | undefined => {
     if (!this.databaseHashMap.has(databaseName)) {
       throw new DatabaseDoesNotExist(`Database with the name ${databaseName} does not exist!`);

@@ -1,10 +1,10 @@
 export interface Query {
   srcColumn: string;
-  srcValue: string
+  srcValue: string;
 }
 
 export interface UpdateQuery {
   srcColumn: string;
   srcValue: string;
-  data: Map<string, any>
+  data: Map<string, any>;
 }

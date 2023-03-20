@@ -2,10 +2,10 @@ export default class Record {
   private readonly rowId: string;
 
   /**
-     * Record data
-     *
-     * @private
-     */
+   * Record data
+   *
+   * @private
+   */
   private columnValues: Map<string, any>;
 
   /**

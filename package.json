@@ -1,13 +1,13 @@
 {
   "name": "in-mem-store",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Simple SQL-like in-memory database",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "npm test && tsc",
     "commit": "cz",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "test": "mocha",
     "lint": "./node_modules/.bin/eslint",
     "prepare": "npm run build",

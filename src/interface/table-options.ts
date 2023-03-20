@@ -1,3 +1,3 @@
 export interface TableOptions {
-  uniqueFields: string[]
+  uniqueFields: string[];
 }
