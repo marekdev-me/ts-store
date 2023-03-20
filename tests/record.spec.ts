@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai';
-import { Store } from '../index';
+import Store from '../index';
 import Record from '../src/struct/Record';
 
 describe('manage table records', () => {
@@ -11,7 +11,7 @@ describe('manage table records', () => {
   // Create a new database
   const database = store.createDatabase(dbName);
   // Create a new table
-  database.createTable(tableName);
+  database.createTable(tableName, { uniqueFields: ['username'] });
   const table = database.getTable('users');
 
   // Map
@@ -97,6 +97,31 @@ describe('manage table records', () => {
 
     records = table.find();
     expect(records).have.length(0);
+  });
+
+  it('should not allow duplicate creation', () => {
+    const dubRec: Map<string, any> = new Map<string, any>(
+      [
+        ['username', 'oops'],
+        ['email', 'marek@wd.me'],
+        ['password', 'password'],
+      ],
+    );
+
+    const dubRecTwo: Map<string, any> = new Map<string, any>(
+      [
+        ['username', 'oops'],
+        ['email', 'marek@wd.me'],
+        ['password', 'password'],
+      ],
+    );
+
+    const recOriginal = table.insertOne(dubRec);
+
+    expect(recOriginal).instanceOf(Record);
+    assert.throws(() => table.insertOne(dubRecTwo));
+
+    table.delete(recOriginal.getRowId());
   });
 
   it('should delete single record where key/value and multiple tag is set to false', () => {

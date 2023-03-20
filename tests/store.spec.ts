@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Store } from '../index';
+import Store from '../index';
 
 describe('it should create new store', () => {
   it('create new store', () => {
