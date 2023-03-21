@@ -14,11 +14,16 @@ export default class Record {
   private columnValues: Map<string, any>;
 
   /**
+   * Whether to set timestampData
+   */
+  readonly timestampData: boolean;
+
+  /**
    * Row creation date
    *
    * @private
    */
-  private readonly createdAt: Date;
+  private createdAt: Date;
 
   /**
    * Row update date
@@ -32,14 +37,19 @@ export default class Record {
    *
    * @param rowId
    * @param columnValues
-   * @param createdAt
-   * @param updatedAt
+   * @param timeStamps
    */
-  constructor(rowId: string, columnValues: Map<string, any>, createdAt: Date, updatedAt: Date) {
+  constructor(rowId: string, columnValues: Map<string, any>, timeStamps: boolean = false) {
     this.rowId = rowId;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+    this.timestampData = timeStamps;
     this.columnValues = columnValues;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+
+    if (timeStamps) {
+      columnValues.set('createdAt', new Date());
+      columnValues.set('updatedAt', new Date());
+    }
   }
 
   /**
@@ -54,8 +64,17 @@ export default class Record {
    *
    * @param columnValues {Map<string, any>} Updated column values map
    */
-  public setColumnValuesMap(columnValues: Map<string, any>) {
+  public setColumnValuesMap(columnValues: Map<string, any>): this {
     this.columnValues = columnValues;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+
+    if (this.timestampData) {
+      this.columnValues.set('createdAt', new Date());
+      this.columnValues.set('updatedAt', new Date());
+    }
+
+    return this;
   }
 
   /**
@@ -82,11 +101,18 @@ export default class Record {
   public getUpdatedAt = (): Date => this.updatedAt;
 
   /**
+   * Get record as an object
+   */
+  public toObject = (): any => Object.fromEntries(this.columnValues);
+
+  /**
    * Set/update row update date
    *
-   * @param updatedAt {Date} Row update date
    */
-  public setUpdatedAt(updatedAt: Date) {
-    this.updatedAt = updatedAt;
+  public setUpdatedAt() {
+    this.updatedAt = new Date();
+    if (this.timestampData) {
+      this.columnValues.set('updatedAt', new Date());
+    }
   }
 }

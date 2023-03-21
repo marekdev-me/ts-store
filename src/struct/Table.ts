@@ -90,7 +90,8 @@ export default class Table {
 
     const objectId = ObjectId();
 
-    const newRecord: Record = new Record(objectId, data, new Date(), new Date());
+    // eslint-disable-next-line max-len
+    const newRecord: Record = new Record(objectId, data, this.tableOptions.timestampData);
 
     this.records.set(objectId, newRecord);
 
@@ -115,7 +116,7 @@ export default class Table {
       record?.getColumnValuesMap().set(v, k);
     });
 
-    record?.setUpdatedAt(new Date());
+    record?.setUpdatedAt();
 
     return this.records?.get(rowId);
   };
@@ -153,7 +154,6 @@ export default class Table {
    * @param query {Query} Query parameters
    */
   public findWhere = (query: Query): Record | undefined => {
-    // TODO: Optimise
     // eslint-disable-next-line no-restricted-syntax
     for (const [key] of this.records.entries()) {
       // eslint-disable-next-line no-restricted-syntax
@@ -179,8 +179,7 @@ export default class Table {
       // eslint-disable-next-line no-restricted-syntax
       for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
         if (query.srcColumn === rKey && query.srcValue === rValue) {
-          this.updateOne(this.records?.get(key).getRowId(), query.data);
-          // this.records.get(key).setColumnValuesMap(query.data);
+          this.updateOne(this.records?.get(key).getRowId(), query.data).setUpdatedAt();
           if (!multiple) {
             return;
           }
@@ -217,6 +216,8 @@ export default class Table {
    * @returns {Map<string, Record>} Map of all the records in a table
    */
   public find = (): Map<string, Record> => this.records;
+
+  public toObject = () => Array.from(this.records, ([key, value]) => ({ key, value }));
 
   /**
    * Get current table name

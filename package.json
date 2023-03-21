@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "npm test && tsc",
+    "build": "npm run clean && npm test && tsc",
     "commit": "cz",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "mocha",
@@ -16,7 +16,7 @@
     "version": "npm run format && git add -A src",
     "postversion": "npm run commit && git push --tags",
     "clean": "if exist lib ( rd /S /Q lib)",
-    "updateLink": "npm run clean && tsc && npm rm my-lib -g && npm link"
+    "updateLink": "npm run clean && npm test && tsc && npm rm my-lib -g && npm link"
   },
   "files": [
     "lib/**/*"

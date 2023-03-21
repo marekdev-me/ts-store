@@ -1,6 +1,7 @@
 import Database from './Database';
 import DatabaseExistsError from '../errors/database-exists-error';
 import DatabaseDoesNotExist from '../errors/database-does-not-exist';
+import { DatabaseOptions } from '../interface/database-options';
 
 export default class Store {
   /**
@@ -14,6 +15,11 @@ export default class Store {
     this.databaseHashMap = new Map<string, Database>();
   }
 
+  /**
+   * Create new store database
+   *
+   * @param databaseName {string} Database name to create
+   */
   public createDatabase = (databaseName: string): Database => {
     if (this.databaseHashMap.has(databaseName)) {
       throw new DatabaseExistsError(`Database with the name ${databaseName} already exists!`);

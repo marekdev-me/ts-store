@@ -2,6 +2,7 @@ import Table from './Table';
 import { TableOptions } from '../interface/table-options';
 import TableExists from '../errors/table-exists-error';
 import TableDoesNotExist from '../errors/table-does-not-exist-error';
+import { DatabaseOptions } from '../interface/database-options';
 
 export default class Database {
   /**
@@ -10,6 +11,11 @@ export default class Database {
    * @private
    */
   readonly databaseName: string;
+
+  /**
+   * Database options
+   */
+  readonly databaseOptions: DatabaseOptions | null;
 
   /**
    * Tables map
@@ -28,11 +34,13 @@ export default class Database {
    * Database class constructor
    *
    * @param dbName {string} Database name
+   * @param options {DatabaseOptions} Database options
    */
-  constructor(dbName: string) {
+  constructor(dbName: string, options?: DatabaseOptions) {
     this.databaseName = dbName;
     this.createdAt = new Date();
     this.tables = new Map<string, Table>();
+    this.databaseOptions = options;
   }
 
   /**
