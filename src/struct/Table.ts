@@ -163,6 +163,9 @@ export default class Table {
         }
       }
     }
+    if (query.throw) {
+      throw new Error(`Could not find record with srcColumn: ${query.srcColumn} and srcValue: ${query.srcValue}`);
+    }
     return undefined;
   };
 
@@ -180,9 +183,7 @@ export default class Table {
       for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
         if (query.srcColumn === rKey && query.srcValue === rValue) {
           this.updateOne(this.records?.get(key).getRowId(), query.data).setUpdatedAt();
-          if (!multiple) {
-            return;
-          }
+          if (!multiple) return;
         }
       }
     }

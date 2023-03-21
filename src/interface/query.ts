@@ -1,6 +1,7 @@
 export interface Query {
   srcColumn: string;
   srcValue: string;
+  throw?: boolean;
 }
 
 export interface UpdateQuery {
