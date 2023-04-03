@@ -13,9 +13,9 @@ describe('manage table records', () => {
   // Create a new table
   database.createTable(tableName, new Map<string, ColumnType>(
       [
-          ["username", 'string'],
-          ["email", 'string'],
-          ["password", 'string'],
+          ["username", { type: 'string' }],
+          ["email", {type: 'string'}],
+          ["password", { type: 'string'}],
       ]
   ), { uniqueFields: ['username'] });
   const table = database.getTable('users');

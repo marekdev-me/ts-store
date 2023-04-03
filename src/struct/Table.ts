@@ -3,8 +3,10 @@ import ObjectId from '../utils/object-id';
 import { Query, UpdateQuery } from '../types/query';
 import { TableOptions } from '../types/table-options';
 import { ColumnType } from '../types/column-type';
+import { ColumnOptions } from '../types/column-options';
 
-// TODO: Validate record fields to table columns before adding them to the table
+// TODO: Add an options to the columns such as unique
+// TODO: ['username', { type: 'string', editable: false, unique: true }],
 
 export default class Table {
   /**
@@ -26,7 +28,7 @@ export default class Table {
    *
    * @readonly
    */
-  readonly tableColumns: Map<string, ColumnType>;
+  readonly tableColumns: Map<string, ColumnOptions>;
 
   /**
    * Table records map
@@ -87,13 +89,17 @@ export default class Table {
   };
 
   validateFields = (rawData: Map<string, ColumnType>): void => {
+    if (this.records.size > 0 && this.tableOptions && !this.isUnique(rawData)) {
+      throw new Error(`Unique data check failed in ${this.tableName} table`);
+    }
+
     // eslint-disable-next-line no-restricted-syntax
     for (const [fieldName, fieldValue] of rawData.entries()) {
       if (!this.tableColumns.has(fieldName)) {
         throw new Error(`Unknown field ${fieldName} specified for ${this.tableName} table`);
       }
 
-      const expectedType = this.tableColumns.get(fieldName);
+      const expectedType = this.tableColumns.get(fieldName).type;
       const actualType = typeof fieldValue;
 
       if (actualType !== expectedType) {
@@ -109,10 +115,6 @@ export default class Table {
    * @returns {Record} Created record
    */
   public insertOne = (data: Map<string, any>): Record => {
-    if (this.records.size > 0 && this.tableOptions && !this.isUnique(data)) {
-      throw new Error(`Unique data check failed in ${this.tableName} table`);
-    }
-
     this.validateFields(data);
 
     const objectId = ObjectId();
@@ -132,14 +134,12 @@ export default class Table {
    * @param valuesMap {Map<string, any>} Updated column values map
    * @returns {Record} Updated record
    */
-  public updateOne = (rowId: string, valuesMap: Map<string, any>): Record | undefined => {
+  public updateOne = (rowId: string, rawData: Map<string, any>): Record | undefined => {
     const record = this.records.get(rowId);
 
-    if (this.records.size > 0 && this.tableOptions && !this.isUnique(valuesMap)) {
-      throw new Error(`Unique data check failed in ${this.tableName} table`);
-    }
+    this.validateFields(rawData);
 
-    valuesMap.forEach((k, v) => {
+    rawData.forEach((k, v) => {
       record?.getColumnValuesMap().set(v, k);
     });
 
