@@ -1,7 +1,8 @@
+import { lstatSync, readdirSync } from 'fs';
 import Database from './Database';
 import DatabaseExistsError from '../errors/database-exists-error';
 import DatabaseDoesNotExist from '../errors/database-does-not-exist';
-import { DatabaseOptions } from '../interface/database-options';
+import { StoreOptions } from '../types/store-options';
 
 export default class Store {
   /**
@@ -11,8 +12,14 @@ export default class Store {
    */
   readonly databaseHashMap: Map<string, Database>;
 
-  constructor() {
+  readonly storeOptions: StoreOptions | null;
+
+  constructor(storeOptions?: StoreOptions) {
     this.databaseHashMap = new Map<string, Database>();
+
+    if (storeOptions) {
+      this.storeOptions = storeOptions || null;
+    }
   }
 
   /**
@@ -30,6 +37,22 @@ export default class Store {
     this.databaseHashMap.set(databaseName, database);
 
     return database;
+  };
+
+  public load = (): void => {
+    if (!this.storeOptions || !this.storeOptions.dataDirectory) {
+      throw new Error('Data directory was not provided in StoreOptions');
+    }
+
+    if (!lstatSync(this.storeOptions.dataDirectory).isDirectory()) {
+      throw new Error('Data directory provided in StoreOptions is not a directory');
+    }
+
+    const dbDirectories = readdirSync(this.storeOptions.dataDirectory, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
+
+    dbDirectories.forEach((dbDir) => this.createDatabase(dbDir));
   };
 
   /**

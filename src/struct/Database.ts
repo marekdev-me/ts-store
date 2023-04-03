@@ -1,8 +1,7 @@
 import Table from './Table';
-import { TableOptions } from '../interface/table-options';
+import { TableOptions } from '../types/table-options';
 import TableExists from '../errors/table-exists-error';
 import TableDoesNotExist from '../errors/table-does-not-exist-error';
-import { DatabaseOptions } from '../interface/database-options';
 
 export default class Database {
   /**
@@ -11,11 +10,6 @@ export default class Database {
    * @private
    */
   readonly databaseName: string;
-
-  /**
-   * Database options
-   */
-  readonly databaseOptions: DatabaseOptions | null;
 
   /**
    * Tables map
@@ -36,11 +30,10 @@ export default class Database {
    * @param dbName {string} Database name
    * @param options {DatabaseOptions} Database options
    */
-  constructor(dbName: string, options?: DatabaseOptions) {
+  constructor(dbName: string) {
     this.databaseName = dbName;
     this.createdAt = new Date();
     this.tables = new Map<string, Table>();
-    this.databaseOptions = options;
   }
 
   /**
@@ -49,12 +42,12 @@ export default class Database {
    * @param tableName {string} Table name to create
    * @param tableOptions Table options
    */
-  public createTable = (tableName: string, tableOptions?: TableOptions): Table => {
+  public createTable = (tableName: string, tableColumns: Map<string, any>, tableOptions?: TableOptions): Table => {
     if (this.tables.has(tableName)) {
       throw new TableExists(`Table with name ${tableName} already exists!`);
     }
 
-    const table = new Table(tableName, tableOptions);
+    const table = new Table(tableName, tableColumns, tableOptions);
     this.tables.set(tableName, table);
 
     return table;
@@ -106,4 +99,6 @@ export default class Database {
    * @returns {Date} Database creation date
    */
   public getCreatedAt = (): Date => this.createdAt;
+
+  public saveTables = (): any => Object.fromEntries(this.tables.entries());
 }

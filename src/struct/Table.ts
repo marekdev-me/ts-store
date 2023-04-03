@@ -1,7 +1,10 @@
 import Record from './Record';
 import ObjectId from '../utils/object-id';
-import { Query, UpdateQuery } from '../interface/query';
-import { TableOptions } from '../interface/table-options';
+import { Query, UpdateQuery } from '../types/query';
+import { TableOptions } from '../types/table-options';
+import { ColumnType } from '../types/column-type';
+
+// TODO: Validate record fields to table columns before adding them to the table
 
 export default class Table {
   /**
@@ -19,6 +22,13 @@ export default class Table {
   readonly tableOptions: TableOptions | null;
 
   /**
+   * Table columns
+   *
+   * @readonly
+   */
+  readonly tableColumns: Map<string, ColumnType>;
+
+  /**
    * Table records map
    *
    * @readonly
@@ -32,20 +42,19 @@ export default class Table {
    */
   readonly createdAt: Date;
 
-  // private eventEmitter: EventEmitter;
-
   /**
    * Table class constructor
    *
    * @param tableName {string} Table name
+   * @param tableColumns {Map<string, any>} Table columns
    * @param options? {TableOptions} Table options
    */
-  constructor(tableName: string, options?: TableOptions) {
+  constructor(tableName: string, tableColumns: Map<string, ColumnType>, options?: TableOptions) {
     this.tableName = tableName;
     this.createdAt = new Date();
     this.records = new Map<string, Record>();
     this.tableOptions = options || null;
-    // this.eventEmitter = Events;
+    this.tableColumns = tableColumns;
   }
 
   /**
@@ -77,6 +86,22 @@ export default class Table {
     return isUnique;
   };
 
+  validateFields = (rawData: Map<string, ColumnType>): void => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [fieldName, fieldValue] of rawData.entries()) {
+      if (!this.tableColumns.has(fieldName)) {
+        throw new Error(`Unknown field ${fieldName} specified for ${this.tableName} table`);
+      }
+
+      const expectedType = this.tableColumns.get(fieldName);
+      const actualType = typeof fieldValue;
+
+      if (actualType !== expectedType) {
+        throw new Error(`Type mismatch for field '${fieldName}': expected ${expectedType}, but got ${actualType}.`);
+      }
+    }
+  };
+
   /**
    * Insert new record into a table
    *
@@ -87,6 +112,8 @@ export default class Table {
     if (this.records.size > 0 && this.tableOptions && !this.isUnique(data)) {
       throw new Error(`Unique data check failed in ${this.tableName} table`);
     }
+
+    this.validateFields(data);
 
     const objectId = ObjectId();
 
@@ -175,14 +202,14 @@ export default class Table {
    * @param query {UpdateQuery} Update query
    * @param multiple {boolean} Whether to affect multiple records
    */
-  public updateWhere = (query: UpdateQuery, multiple: boolean = false): void => {
+  public updateWhere = ({ query: { srcColumn, srcValue }, data }: UpdateQuery, multiple: boolean = false): void => {
     // TODO: Optimise
     // eslint-disable-next-line no-restricted-syntax
     for (const [key] of this.records.entries()) {
       // eslint-disable-next-line no-restricted-syntax
       for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
-        if (query.srcColumn === rKey && query.srcValue === rValue) {
-          this.updateOne(this.records?.get(key).getRowId(), query.data).setUpdatedAt();
+        if (srcColumn === rKey && srcValue === rValue) {
+          this.updateOne(this.records?.get(key).getRowId(), data).setUpdatedAt();
           if (!multiple) return;
         }
       }

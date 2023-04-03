@@ -13,7 +13,7 @@ describe('manage database tables', () => {
 
   it('should add single new table to database', () => {
     // Add a new table to database
-    const table = database.createTable('users');
+    const table = database.createTable('users', new Map<string, any>());
 
     // Expect returned table to be Instance Of Table class
     assert.instanceOf(table, Table);

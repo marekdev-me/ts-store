@@ -1,4 +1,4 @@
-export interface TableOptions {
+export type TableOptions = {
   uniqueFields: string[];
   timestampData?: boolean;
-}
+};
