@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai';
-import Store, { ColumnType } from '../src';
+import Store, { ColumnOptions } from '../src';
 import Record from '../src/struct/Record';
 
 describe('manage table records', () => {
@@ -11,11 +11,11 @@ describe('manage table records', () => {
   // Create a new database
   const database = store.createDatabase(dbName);
   // Create a new table
-  database.createTable(tableName, new Map<string, ColumnType>(
+  database.createTable(tableName, new Map<string, ColumnOptions>(
       [
-          ["username", { type: 'string' }],
-          ["email", {type: 'string'}],
-          ["password", { type: 'string'}],
+          ["username", { type: 'string', editable: true, unique: true }],
+          ["email", {type: 'string', editable: true, unique: false}],
+          ["password", { type: 'string', editable: true, unique: false}],
       ]
   ), { uniqueFields: ['username'] });
   const table = database.getTable('users');

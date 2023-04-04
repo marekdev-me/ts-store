@@ -2,6 +2,7 @@ import Table from './Table';
 import { TableOptions } from '../types/table-options';
 import TableExists from '../errors/table-exists-error';
 import TableDoesNotExist from '../errors/table-does-not-exist-error';
+import { ColumnOptions } from '../types/column-options';
 
 export default class Database {
   /**
@@ -40,9 +41,10 @@ export default class Database {
    * Add a new table to database
    *
    * @param tableName {string} Table name to create
+   * @param tableColumns {ColumnOptions[]} Table columns
    * @param tableOptions Table options
    */
-  public createTable = (tableName: string, tableColumns: Map<string, any>, tableOptions?: TableOptions): Table => {
+  public createTable = (tableName: string, tableColumns: Map<string, ColumnOptions>, tableOptions?: TableOptions): Table => {
     if (this.tables.has(tableName)) {
       throw new TableExists(`Table with name ${tableName} already exists!`);
     }

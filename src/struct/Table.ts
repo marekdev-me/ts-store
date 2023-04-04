@@ -51,7 +51,7 @@ export default class Table {
    * @param tableColumns {Map<string, any>} Table columns
    * @param options? {TableOptions} Table options
    */
-  constructor(tableName: string, tableColumns: Map<string, ColumnType>, options?: TableOptions) {
+  constructor(tableName: string, tableColumns: Map<string, ColumnOptions>, options?: TableOptions) {
     this.tableName = tableName;
     this.createdAt = new Date();
     this.records = new Map<string, Record>();
@@ -65,32 +65,31 @@ export default class Table {
    * @param data {Map<string, any>} Raw data to be checked against
    * @returns {boolean} Whether values are unique
    */
-  private isUnique = (data: Map<string, any>): boolean => {
-    let isUnique = true;
+  // TODO: Check if values are unique and column config contains unique config
+  private isUnique = (rawData: Map<string, any>): void => {
+    // Loop over data keys
+    for (const key of rawData.keys()) {
+      const columnOptions = this.tableColumns.get(key);
 
-    if (this.tableOptions) {
-      Array.from(this.records.keys()).forEach((r) => {
-        const record = this.records.get(r)?.getColumnValuesMap();
-        // Check for unknown fields
-        this.tableOptions.uniqueFields.map((k) => {
-          if (!record.has(k)) {
-            throw new Error(`Non-existing unique field ${k} specified for ${this.tableName} table`);
-          }
+      // Check if column exists
+      if (!columnOptions) {
+        throw new Error(`Column ${key} does not exist on table ${this.tableName}`);
+      }
 
-          if (record.get(k) === data.get(k)) {
-            isUnique = false;
-            return true; // exit the loop early
+      if (columnOptions.unique) {
+        const value = rawData.get(key);
+        Array.from(this.records.values()).forEach((record) => {
+          if (record.getColumnValuesMap().get(key) === value) {
+            throw new Error(`Value ${value} already exists on table ${this.tableName}`);
           }
-          return isUnique;
         });
-      });
+      }
     }
-    return isUnique;
   };
 
-  validateFields = (rawData: Map<string, ColumnType>): void => {
-    if (this.records.size > 0 && this.tableOptions && !this.isUnique(rawData)) {
-      throw new Error(`Unique data check failed in ${this.tableName} table`);
+  private validateFields = (rawData: Map<string, ColumnType>, action: 'create' | 'update'): void => {
+    if (this.records.size > 0) {
+      this.isUnique(rawData);
     }
 
     // eslint-disable-next-line no-restricted-syntax
@@ -99,7 +98,17 @@ export default class Table {
         throw new Error(`Unknown field ${fieldName} specified for ${this.tableName} table`);
       }
 
-      const expectedType = this.tableColumns.get(fieldName).type;
+      const column = this.tableColumns.get(fieldName);
+
+      // if (action === 'create') {}
+
+      if (action === 'update') {
+        if (!column.editable) {
+          throw new Error(`Field ${fieldName} is not editable in ${this.tableName} table`);
+        }
+      }
+
+      const expectedType = column.type;
       const actualType = typeof fieldValue;
 
       if (actualType !== expectedType) {
@@ -115,7 +124,7 @@ export default class Table {
    * @returns {Record} Created record
    */
   public insertOne = (data: Map<string, any>): Record => {
-    this.validateFields(data);
+    this.validateFields(data, 'create');
 
     const objectId = ObjectId();
 
@@ -137,7 +146,7 @@ export default class Table {
   public updateOne = (rowId: string, rawData: Map<string, any>): Record | undefined => {
     const record = this.records.get(rowId);
 
-    this.validateFields(rawData);
+    this.validateFields(rawData, 'update');
 
     rawData.forEach((k, v) => {
       record?.getColumnValuesMap().set(v, k);
@@ -202,7 +211,7 @@ export default class Table {
    * @param query {UpdateQuery} Update query
    * @param multiple {boolean} Whether to affect multiple records
    */
-  public updateWhere = ({ query: { srcColumn, srcValue }, data }: UpdateQuery, multiple: boolean = false): void => {
+  public updateWhere = ({ query: { srcColumn, srcValue }, data }: UpdateQuery, affectAll: boolean = false): void => {
     // TODO: Optimise
     // eslint-disable-next-line no-restricted-syntax
     for (const [key] of this.records.entries()) {
@@ -210,7 +219,7 @@ export default class Table {
       for (const [rKey, rValue] of this.records.get(key).getColumnValuesMap().entries()) {
         if (srcColumn === rKey && srcValue === rValue) {
           this.updateOne(this.records?.get(key).getRowId(), data).setUpdatedAt();
-          if (!multiple) return;
+          if (!affectAll) return;
         }
       }
     }

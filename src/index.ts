@@ -1,8 +1,8 @@
 import Store from './struct/Store';
-import { ColumnType } from './types/column-type';
+import { ColumnOptions } from './types/column-options';
 
 export {
-  ColumnType,
+  ColumnOptions,
 };
 
 export default Store;

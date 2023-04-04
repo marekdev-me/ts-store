@@ -4,5 +4,13 @@ export type ColumnOptions = {
   type: ColumnType,
   editable?: boolean,
   unique?: boolean,
-  hidden?: boolean, // FIXME: Not yet implemented
+  // FIXME: Not yet implemented - Nothing implemented beyond this point
+  hidden?: boolean,
+  validate?: {
+    min?: number,
+    max?: number,
+    length?: number,
+    email?: boolean,
+    pattern?: string,
+  }
 };
