@@ -3,6 +3,7 @@ import Store, { ColumnOptions } from '../src';
 import Record from '../src/struct/Record';
 
 describe('manage table records', () => {
+  // Variables
   const dbName: string = 'MyDatabase';
   const tableName: string = 'users';
 
@@ -12,12 +13,13 @@ describe('manage table records', () => {
   const database = store.createDatabase(dbName);
   // Create a new table
   database.createTable(tableName, new Map<string, ColumnOptions>(
-      [
-          ["username", { type: 'string', editable: true, unique: true }],
-          ["email", {type: 'string', editable: true, unique: false}],
-          ["password", { type: 'string', editable: true, unique: false}],
-      ]
-  ), { uniqueFields: ['username'] });
+    [
+      ['username', { type: 'string', editable: true, unique: true }],
+      ['email', { type: 'string', editable: true, unique: false }],
+      ['password', { type: 'string', editable: true, unique: false }],
+    ],
+  ), { timestampData: false });
+
   const table = database.getTable('users');
 
   // Map

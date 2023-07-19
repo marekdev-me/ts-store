@@ -1,5 +1,5 @@
+import { uuid } from 'uuidv4';
 import Record from './Record';
-import ObjectId from '../utils/object-id';
 import { Query, UpdateQuery } from '../types/query';
 import { TableOptions } from '../types/table-options';
 import { ColumnType } from '../types/column-type';
@@ -62,7 +62,7 @@ export default class Table {
   /**
    * Check if values are unique if specified in table options
    *
-   * @param data {Map<string, any>} Raw data to be checked against
+   * @param rawData {Map<string, any>} Raw data to be checked against
    * @returns {boolean} Whether values are unique
    */
   // TODO: Check if values are unique and column config contains unique config
@@ -126,7 +126,7 @@ export default class Table {
   public insertOne = (data: Map<string, any>): Record => {
     this.validateFields(data, 'create');
 
-    const objectId = ObjectId();
+    const objectId = uuid();
 
     // eslint-disable-next-line max-len
     const newRecord: Record = new Record(objectId, data, this.tableOptions.timestampData);
@@ -140,7 +140,7 @@ export default class Table {
    * Update a single row by ID
    *
    * @param rowId {string} Row ID
-   * @param valuesMap {Map<string, any>} Updated column values map
+   * @param rawData {Map<string, any>} Updated column values map
    * @returns {Record} Updated record
    */
   public updateOne = (rowId: string, rawData: Map<string, any>): Record | undefined => {
@@ -209,7 +209,7 @@ export default class Table {
    * Update where key/value
    *
    * @param query {UpdateQuery} Update query
-   * @param multiple {boolean} Whether to affect multiple records
+   * @param affectAll
    */
   public updateWhere = ({ query: { srcColumn, srcValue }, data }: UpdateQuery, affectAll: boolean = false): void => {
     // TODO: Optimise

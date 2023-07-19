@@ -3,6 +3,7 @@ import Store from '../src';
 import Database from '../src/struct/Database';
 
 describe('add a database to a newly created store', () => {
+  // Test case
   it('should add new database and return created database', () => {
     const dbName = 'MyNewDatabase';
     // Create new store

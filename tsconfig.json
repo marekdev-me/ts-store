@@ -11,10 +11,10 @@
     "strict": false,
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ],
   "exclude": [
-    "node_modules",
-    "tests"
+    "node_modules"
   ]
 }

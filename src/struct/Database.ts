@@ -29,7 +29,6 @@ export default class Database {
    * Database class constructor
    *
    * @param dbName {string} Database name
-   * @param options {DatabaseOptions} Database options
    */
   constructor(dbName: string) {
     this.databaseName = dbName;
@@ -44,7 +43,11 @@ export default class Database {
    * @param tableColumns {ColumnOptions[]} Table columns
    * @param tableOptions Table options
    */
-  public createTable = (tableName: string, tableColumns: Map<string, ColumnOptions>, tableOptions?: TableOptions): Table => {
+  public createTable = (
+    tableName: string,
+    tableColumns: Map<string, ColumnOptions>,
+    tableOptions?: TableOptions,
+  ): Table => {
     if (this.tables.has(tableName)) {
       throw new TableExists(`Table with name ${tableName} already exists!`);
     }
@@ -101,6 +104,4 @@ export default class Database {
    * @returns {Date} Database creation date
    */
   public getCreatedAt = (): Date => this.createdAt;
-
-  public saveTables = (): any => Object.fromEntries(this.tables.entries());
 }
